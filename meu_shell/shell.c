@@ -34,20 +34,20 @@ void libera(int linhas, char **str, Instrucao* comando) {
 int traduzir(char* cmd) {
 	if(strcmp(cmd,"sair") == 0) //sair retorna 0
 		return 0;
-	else if(strcmp("data",cmd) == 0) // date retorna 1
+	else if(strcmp("date",cmd) == 0) // date retorna 1
 		return 1;
-	else if(strcmp(cmd,"criarProcesso") == 0) // fork retorna 2
+	else if(strcmp(cmd,"fork") == 0) // fork retorna 2
 		return 2;
-	else if(strcmp(cmd,"listar") == 0) // ls retorna 3
+	else if(strcmp(cmd,"ls") == 0) // ls retorna 3
 		return 3;
-	else if(strcmp(cmd,"aqui") == 0) // pwd retorna 4
+	else if(strcmp(cmd,"pwd") == 0) // pwd retorna 4
 		return 4;
-	else if(strcmp(cmd,"mostrar") == 0) // cat(execl) retorna 5
+	else if(strcmp(cmd,"cat") == 0) // cat(execl) retorna 5
 		return 5;
-	else if(strcmp(cmd,"excluir") == 0) // rm diretorio retorna 6
+	else if(strcmp(cmd,"mkdir") == 0) // mkdir retorna 6
 		return 6;
-	else if(strcmp(cmd,""))
-		return ;
+	else if(strcmp(cmd,"rm") == 0) //rm retorna 7
+		return 7;
 	else 
 		return -1;
 }
@@ -123,18 +123,16 @@ void ls() {
 	}
 	else { // Execução do processo filho
 		struct dirent **namelist;
-    	int n;
-
-   		n = scandir(".", &namelist, NULL, alphasort);
-    	if (n < 0)
-        	perror("scandir");
-    	else {
-	        while (n--) {
-	            printf("%s\n", namelist[n]->d_name);
-	            free(namelist[n]);
-	        }
-	        free(namelist);
-   		}
+	    int n;
+	    char* dir = get_current_dir_name();
+	    struct stat sb;
+	    stat(dir, &sb);
+	    n = scandirat(sb.st_ino, dir, &namelist, NULL, alphasort);
+	    //perror("scandirat");
+	    while (n--) {
+	        printf("%s\n", namelist[n]->d_name);
+	        free(namelist[n]);
+	    }
 	}	
 }
 
@@ -170,11 +168,39 @@ void cat(char* arq) {
 
 }
 
+void mkdir(char* nome) {
+	pid_t filho = fork();
+	if (filho < 0){ //erro ao criar novo processo
+		printf("Nao foi possivel criar outro processo!\n");
+		perror("fork()error");
+	}
+	if(filho > 0) { //Execução do processo pai
+		wait(NULL);//Espera o filho desse processo retorna para ele(join)
+	}
+	else {
+		struct dirent **namelist;
+	    int n;
+	    struct stat sb;
+	    char* dir = get_current_dir_name();
+	    stat(dir, &sb);
+	    printf("%d\n", sb.st_ino);
+	    strcat(dir,"/");
+	    strcat(dir,nome);
+	    printf("%d\n",mkdirat(sb.st_ino, dir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH));
+	    //perror("mkdirat");
+	    free(dir);
+	}
+}
+
+void rm(char* str) {
+
+}
+
 void prompt_line() {
 		char cmd[100];
 		while (1) {
-			printf("\ncomando: ");
 			setbuf(stdin,NULL);
+			printf("\ncomando: ");
 			scanf("%[^\n]s",cmd);
 			Instrucao* comando;
 			comando = tratamento(cmd);
@@ -207,6 +233,10 @@ void prompt_line() {
 					break;
 				case 5:
 					cat(comando->tab_argumentos[1]);
+					libera(comando->qtd_args,comando->tab_argumentos,comando);
+					break;
+				case 6:
+					mkdir(comando->tab_argumentos[1]);
 					libera(comando->qtd_args,comando->tab_argumentos,comando);
 					break;
 				default:
