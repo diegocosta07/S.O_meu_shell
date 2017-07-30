@@ -48,6 +48,8 @@ int traduzir(char* cmd) {
 		return 6;
 	else if(strcmp(cmd,"rm") == 0) //rm retorna 7
 		return 7;
+	else if(strcmp(cmd,"cd") == 0) //cd retorna 8
+		return 8;
 	else 
 		return -1;
 }
@@ -186,21 +188,32 @@ void mkdir(char* nome) {
 	    printf("%d\n", sb.st_ino);
 	    strcat(dir,"/");
 	    strcat(dir,nome);
-	    printf("%d\n",mkdirat(sb.st_ino, dir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH));
-	    //perror("mkdirat");
+	    n = mkdirat(sb.st_ino, dir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	    if (n == -1)
+	    	perror("mkdirat");
 	    free(dir);
 	}
 }
 
 void rm(char* str) {
+	int n = remove(str);
+	if (n == -1)
+		perror("remove");
+}
 
+void cd(char* str) {	
+	int n = chdir(str);
+	if (n == -1)
+    	perror("chdir");
 }
 
 void prompt_line() {
 		char cmd[100];
+		char* onde;
 		while (1) {
 			setbuf(stdin,NULL);
-			printf("\ncomando: ");
+			onde = get_current_dir_name();
+			printf("\n%s comando: ",onde);
 			scanf("%[^\n]s",cmd);
 			Instrucao* comando;
 			comando = tratamento(cmd);
@@ -237,6 +250,14 @@ void prompt_line() {
 					break;
 				case 6:
 					mkdir(comando->tab_argumentos[1]);
+					libera(comando->qtd_args,comando->tab_argumentos,comando);
+					break;
+				case 7:
+					rm(comando->tab_argumentos[1]);
+					libera(comando->qtd_args,comando->tab_argumentos,comando);
+					break;
+				case 8:
+					cd(comando->tab_argumentos[1]);
 					libera(comando->qtd_args,comando->tab_argumentos,comando);
 					break;
 				default:

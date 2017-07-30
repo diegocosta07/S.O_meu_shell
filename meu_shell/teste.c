@@ -36,17 +36,21 @@ main()
     free(namelist);
          */
 
+   
+    char* str = "/home/diego/Documents/meu_shell/01";
+    chdir(str);
+    perror("chdir");
     struct dirent **namelist;
     int n;
+    char* dir = get_current_dir_name();
     struct stat sb;
-    stat(/home/diego/Documents/meu_shell/01, &sb);
-    n = scandirat(sb.st_ino, "/home/diego/Documents/meu_shell/01", &namelist, NULL, alphasort);
+    stat(dir, &sb);
+    n = scandirat(sb.st_ino, dir, &namelist, NULL, alphasort);
     perror("scandirat");
     while (n--) {
-        remove namelist[n]->d_name);
+        printf("%s\n", namelist[n]->d_name);
         free(namelist[n]);
     }
-    remove(namelist);
     free(namelist);
 
 }
