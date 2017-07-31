@@ -34,7 +34,7 @@ void libera(int linhas, char **str, Instrucao* comando) {
 int traduzir(char* cmd) {
 	if(strcmp(cmd,"sair") == 0) //sair retorna 0
 		return 0;
-	else if(strcmp("date",cmd) == 0) // date retorna 1
+	else if(strcmp("date",cmd) == 0) // date(execl) retorna 1
 		return 1;
 	else if(strcmp(cmd,"fork") == 0) // fork retorna 2
 		return 2;
@@ -50,6 +50,8 @@ int traduzir(char* cmd) {
 		return 7;
 	else if(strcmp(cmd,"cd") == 0) //cd retorna 8
 		return 8;
+	else if(strcmp(cmd,"comandos") == 0) //comandos retorna 9
+		return 9;
 	else 
 		return -1;
 }
@@ -207,17 +209,24 @@ void cd(char* str) {
     	perror("chdir");
 }
 
+void comandos() {
+	char* c[] = {"cd <diretorio>", "mkdir <nome>", "rm <nome_arquivo|nome_diretorio>", "ls", "date", "cat <nome_arquivo>", "fork", "pwd", "sair"};
+	int i;
+	printf("Comandos aceitos: \n");
+	for (i = 0; i<9; i++)
+		printf("%s\n", c[i]);
+}
+
 void prompt_line() {
 		char cmd[100];
 		char* onde;
 		while (1) {
 			setbuf(stdin,NULL);
-			onde = get_current_dir_name();
-			printf("\n%s comando: ",onde);
+			printf("\ncomando: ");
 			scanf("%[^\n]s",cmd);
 			Instrucao* comando;
 			comando = tratamento(cmd);
-			//printf("%d\n",comando->op );
+			//printf("OPCODE %d\n",comando->op );
 			switch(comando->op) {
 				case 0:
 					libera(comando->qtd_args,comando->tab_argumentos,comando);
@@ -258,6 +267,10 @@ void prompt_line() {
 					break;
 				case 8:
 					cd(comando->tab_argumentos[1]);
+					libera(comando->qtd_args,comando->tab_argumentos,comando);
+					break;
+				case 9:
+					comandos();
 					libera(comando->qtd_args,comando->tab_argumentos,comando);
 					break;
 				default:

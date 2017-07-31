@@ -37,7 +37,7 @@ main()
          */
 
    
-    char* str = "/home/diego/Documents/meu_shell/01";
+    /*char* str = "/home/diego/Documents/meu_shell/01";
     chdir(str);
     perror("chdir");
     struct dirent **namelist;
@@ -51,6 +51,6 @@ main()
         printf("%s\n", namelist[n]->d_name);
         free(namelist[n]);
     }
-    free(namelist);
+    free(namelist);*/
 
 }
